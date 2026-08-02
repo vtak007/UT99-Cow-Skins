@@ -85,5 +85,7 @@
 - Benign pre-existing log noise: `MVU3` / `BDBMapVote` are listed as bare
   package names (no `.Class`), so UT logs `Failed to load "NULL" / Class
   None.MVU3` then loads them anyway. Not an error; ignore.
-- Remaining (manual, needs a live client): confirm a client using class
-  `MultiMesh.TCow` (Nali Cow) actually spawns as the cow, not Male Commando.
+- DONE 2026-08-01: end-to-end confirmed in-game — a client with the Nali War
+  Cow class (`MultiMesh.TCow`) spawns as the cow, not Male Commando. The
+  next-netcode-ef237853 handler rebuild + deploy is fully verified. No open
+  items; this is the baseline working state for the next IG+ update.
