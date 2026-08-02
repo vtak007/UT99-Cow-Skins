@@ -89,3 +89,9 @@
   Cow class (`MultiMesh.TCow`) spawns as the cow, not Male Commando. The
   next-netcode-ef237853 handler rebuild + deploy is fully verified. No open
   items; this is the baseline working state for the next IG+ update.
+
+## CHANGE LOG
+
+Newest first. Format: `- YYYY-MM-DD — what changed`.
+
+- 2026-08-02 — Added this Change Log section (UT99 convention).
