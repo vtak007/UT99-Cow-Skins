@@ -25,8 +25,9 @@
   `InstaGibPlus.ini` `[ServerSettings]` were empty. This fails **silently**:
   the handler `.u` files still load from `ServerPackages` and still replicate
   to clients, so nothing errors — IG+ simply never invokes them, and every
-  custom class falls back to Male Commando. Suspected cause: an IG+ ini
-  rewrite, or an older `InstaGibPlus.ini` uploaded over the live one.
+  custom class falls back to Male Commando. Cause (confirmed 2026-08-11):
+  human error while hand-editing `InstaGibPlus.ini` to optimise other
+  settings. IG+ does not blank these on its own.
   **First diagnostic for any "wrong model" report:** grep the startup log for
   `Bonus Pack 1 supported` / `Bonus Pack 4 supported`. Absent = `PlayerPacks[]`
   is the problem; no rebuild needed if the IG+ `PackageVersion` is unchanged.
@@ -128,15 +129,17 @@
   Diagnosed from `FMJ Server Log 2026-08-10.log` + the server's
   `InstaGibPlus.ini`: `PlayerPacks[]` was blank. Restored `BP1`/`BP4`,
   restarted, user confirmed the cow renders in-game. No rebuild required.
-- OPEN: root cause of the blanking is unconfirmed (IG+ ini rewrite vs. an
-  older ini uploaded over the live one). If it recurs, capture the ini's
-  mtime and the NFO control-panel change history before fixing it, so the
-  writer can be identified.
+- Note: `PlayerPacks[]` sits amid the `[ServerSettings]` tuning block, so it
+  is easy to clear by accident during hand-edits. Diff `InstaGibPlus.ini`
+  against the previous copy before uploading, or at minimum re-check the two
+  `PlayerPacks` lines afterwards.
 
 ## CHANGE LOG
 
 Newest first. Format: `- YYYY-MM-DD — what changed`.
 
+- 2026-08-11 — Confirmed the `PlayerPacks[]` blanking was a hand-edit slip,
+  not IG+ behaviour; closed the open item.
 - 2026-08-10 — Recorded the blank-`PlayerPacks[]` regression: new confirmed
   root cause, two ruled-out theories (the `Gold1` texture error is a symptom;
   client `Force Default Models` proves nothing), a triage order, and a

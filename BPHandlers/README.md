@@ -102,8 +102,9 @@ case; do not start with the texture warnings.
 1. **Check the startup log for `Bonus Pack 1 supported` /
    `Bonus Pack 4 supported`.** If they are missing, IG+ never registered the
    handlers. The usual cause is that `PlayerPacks[0]=BP1` / `PlayerPacks[1]=BP4`
-   in `InstaGibPlus.ini` `[ServerSettings]` have gone blank — an IG+ ini
-   rewrite or an older ini uploaded over the live one will do this.
+   in `InstaGibPlus.ini` `[ServerSettings]` have gone blank — most often an
+   accidental hand-edit while changing other `[ServerSettings]` values, since
+   they sit in the middle of the tuning block.
 
    This failure is **silent**: `ServerPackages` still loads the handler `.u`
    files and still sends them to clients, so nothing errors. Restore the two
