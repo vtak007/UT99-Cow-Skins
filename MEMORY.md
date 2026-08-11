@@ -20,6 +20,16 @@
   (`NewNetIG`). Its presence forces instagib; with it absent, IG+ loads default
   UT weapons (= normal DM). Gametype itself was never wrong (`Game class is
   'DeathMatchPlus'`).
+- **`PlayerPacks[]` can silently go blank** (recurrence 2026-08-10). The
+  `PlayerPacks[0]=BP1` / `PlayerPacks[1]=BP4` entries in the server's
+  `InstaGibPlus.ini` `[ServerSettings]` were empty. This fails **silently**:
+  the handler `.u` files still load from `ServerPackages` and still replicate
+  to clients, so nothing errors — IG+ simply never invokes them, and every
+  custom class falls back to Male Commando. Suspected cause: an IG+ ini
+  rewrite, or an older `InstaGibPlus.ini` uploaded over the live one.
+  **First diagnostic for any "wrong model" report:** grep the startup log for
+  `Bonus Pack 1 supported` / `Bonus Pack 4 supported`. Absent = `PlayerPacks[]`
+  is the problem; no rebuild needed if the IG+ `PackageVersion` is unchanged.
 
 ## RULED-OUT THEORIES
 
@@ -33,6 +43,20 @@
   `.Instagib` on the mutator line "works" only because it fails to load and is
   silently skipped, which drops `NewNetIG` and yields normal DM weapons.
   Prefer removing `NewNetIG` outright over relying on a bogus class name.
+- A server-log skin error such as
+  `Failed to load "Texture TCowMeshSkinscc.Gold1"` →
+  `so load CommandoSkins.cmdo1` is **not** a missing or corrupt `.utx` on the
+  server, and not a mismatch against the client's copy. Note the appended `1`:
+  that numeric suffix comes from Botpack's **Male** `SetMultiSkin`, whereas
+  `bbTCow.SetMultiSkin` (`bbTCow.uc:60`) passes the skin name verbatim to
+  element 1. So the texture error is *downstream* of the class already having
+  been downgraded to `bbTMale1` — a symptom, not a cause. Fix the class
+  (see `PlayerPacks[]` above) and the texture error disappears. Do not go
+  hunting for `.utx` files.
+- Client-side `Force Default Models` being unchecked does not rule out a
+  server-side model override; check `ForceModels=0` and `bForceModels=False`
+  in `InstaGibPlus.ini`, then check the possessed pawn class in the log
+  (`Log: Possessed PlayerPawn: <class>`), which is the authoritative answer.
 
 ## PROJECT CONVENTIONS
 
@@ -67,6 +91,17 @@
   `UnrealTournament.ini` `[Engine.GameEngine]` holds the versioned
   `ServerPackages=BP1H.../BP4H...` lines. The `?mutator=...` start line
   (set in the NFO control panel, not these inis) is what controls instagib.
+  **After any IG+ update or ini upload, re-check that `PlayerPacks[0]=BP1` and
+  `PlayerPacks[1]=BP4` are still populated** — they have been blanked before
+  (2026-08-10) and the failure is silent.
+- **Triage order for a "wrong player model" report** (fastest to slowest):
+  1. Startup log — are `Bonus Pack 1 supported` / `Bonus Pack 4 supported`
+     present? No → `PlayerPacks[]` blank in `InstaGibPlus.ini`.
+  2. Join log — `Log: Possessed PlayerPawn:` should be `bbTCow` (etc.), not
+     `bbTMale1`. This is the definitive check that the handler fired.
+  3. Only if 1 and 2 are clean, look at `PackageVersion` / rebuild, then at
+     `ServerPackages` and the `.u` upload to the server's `System\`.
+  Ignore skin/texture load warnings until 1 and 2 pass — see RULED-OUT.
 - This is a standalone local git repo (branch `main`), pushed to GitHub remote
   `origin` = https://github.com/vtak007/UT99-Cow-Skins (public, account
   vtak007). Per global `CLAUDE.md`, doc updates (`README.md`/`CLAUDE.md`) wait
@@ -89,9 +124,21 @@
   Cow class (`MultiMesh.TCow`) spawns as the cow, not Male Commando. The
   next-netcode-ef237853 handler rebuild + deploy is fully verified. No open
   items; this is the baseline working state for the next IG+ update.
+- DONE 2026-08-10: regression — cow model forced to Male Commando again.
+  Diagnosed from `FMJ Server Log 2026-08-10.log` + the server's
+  `InstaGibPlus.ini`: `PlayerPacks[]` was blank. Restored `BP1`/`BP4`,
+  restarted, user confirmed the cow renders in-game. No rebuild required.
+- OPEN: root cause of the blanking is unconfirmed (IG+ ini rewrite vs. an
+  older ini uploaded over the live one). If it recurs, capture the ini's
+  mtime and the NFO control-panel change history before fixing it, so the
+  writer can be identified.
 
 ## CHANGE LOG
 
 Newest first. Format: `- YYYY-MM-DD — what changed`.
 
+- 2026-08-10 — Recorded the blank-`PlayerPacks[]` regression: new confirmed
+  root cause, two ruled-out theories (the `Gold1` texture error is a symptom;
+  client `Force Default Models` proves nothing), a triage order, and a
+  post-update check. Server fix was config-only; no source or build change.
 - 2026-08-02 — Added this Change Log section (UT99 convention).

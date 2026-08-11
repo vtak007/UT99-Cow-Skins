@@ -94,6 +94,45 @@ there, change `SkeletalMesh'SkeletalChars.WarMachineBoss'` to
    (Class `MultiMesh.TCow`), skin `TCowMeshSkins.WarCow` etc. You should spawn
    as the cow instead of Male Commando.
 
+## Troubleshooting: "the server forces me into Commando"
+
+Work through these in order. Steps 1 and 2 identify the cause in almost every
+case; do not start with the texture warnings.
+
+1. **Check the startup log for `Bonus Pack 1 supported` /
+   `Bonus Pack 4 supported`.** If they are missing, IG+ never registered the
+   handlers. The usual cause is that `PlayerPacks[0]=BP1` / `PlayerPacks[1]=BP4`
+   in `InstaGibPlus.ini` `[ServerSettings]` have gone blank — an IG+ ini
+   rewrite or an older ini uploaded over the live one will do this.
+
+   This failure is **silent**: `ServerPackages` still loads the handler `.u`
+   files and still sends them to clients, so nothing errors. Restore the two
+   entries and restart; no rebuild is needed if the IG+ `PackageVersion` has
+   not changed.
+
+2. **Check the join log for `Log: Possessed PlayerPawn:`.** This is the
+   definitive answer. It should read `bbTCow` (or `bbTNali`, `bbWarBoss`, …).
+   If it reads `bbTMale1`/`bbTMale2`, the handler did not fire — go back to
+   step 1, then check `PackageVersion` and the `.u` upload to `System\`.
+
+3. **Ignore skin/texture load warnings until 1 and 2 pass.** A line like
+
+   ```
+   Warning: Failed to load "Texture TCowMeshSkinscc.Gold1": Object not found.
+   ScriptLog: Failed to load tcowmeshskinscc.Gold1 so load CommandoSkins.cmdo1
+   ```
+
+   is a *symptom*, not the cause, and does **not** mean the `.utx` on the
+   server is missing, corrupt, or out of sync with the client. Note the
+   appended `1`: that numeric suffix is Botpack's **Male** `SetMultiSkin`,
+   whereas `bbTCow.SetMultiSkin` passes the skin name verbatim. Seeing it
+   proves the class was already downgraded to a Male pawn upstream. Fix the
+   class and the texture warning goes away on its own.
+
+4. **The client's `Force Default Models` setting is a red herring.** It being
+   unchecked does not rule out a server-side override. Verify `ForceModels=0`
+   and `bForceModels=False` in `InstaGibPlus.ini`, then trust step 2.
+
 ## Port notes (what changed vs the UTPure 7H originals)
 
 - `bbCustomPlayer` no longer overrides `Tick` — modern IG+ has a real
