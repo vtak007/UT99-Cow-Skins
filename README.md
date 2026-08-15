@@ -38,7 +38,7 @@ that exact IG+ build**. That is what `build.bat` does.
 3. Verify the stock GOTY files exist in `<UT>\System`: `MultiMesh.u`,
    `EpicCustomModels.u`, `SkeletalChars.u` (plus `TCowMeshSkins.utx`,
    `TNaliMeshSkins.utx`, `TSkMSkins.utx` in `<UT>\Textures`).
-4. Run:
+4. From the `BPHandlers` folder, run:
 
    ```
    build.bat "C:\UnrealTournament" InstaGibPlus_next-netcode-ef237853
